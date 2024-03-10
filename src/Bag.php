@@ -10,7 +10,7 @@ use Traversable;
 class Bag implements BagInterface
 {
 
-    private array $bag;
+    private array $bag = [];
 
     public function __construct(array $bag = [])
     {
@@ -34,6 +34,8 @@ class Bag implements BagInterface
 
     public function set(array $bag): self
     {
+        $this->bag = [];
+
         foreach ($bag as $key => $value) {
             $this->add($key, $value);
         }
