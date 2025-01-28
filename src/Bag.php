@@ -50,27 +50,27 @@ class Bag implements BagInterface
         return $this;
     }
 
-    public function getAlpha(string $key, ?string $default = null): string
+    public function getAlpha(string $key, ?string $default = null): ?string
     {
-        return preg_replace('/[^[:alpha:]]/', '', $this->get($key, $default));
+        return $this->has($key) ? preg_replace('/[^[:alpha:]]/', '', $this->get($key)) : $default;
     }
 
-    public function getAlphaNum(string $key, ?string $default = null): string
+    public function getAlphaNum(string $key, ?string $default = null): ?string
     {
-        return preg_replace('/[^[:alnum:]]/', '', $this->get($key, $default));
+        return $this->has($key) ? preg_replace('/[^[:alnum:]]/', '', $this->get($key)) : $default;
     }
 
-    public function getArray(string $key, array $default = []): array
+    public function getArray(string $key, ?array $default = []): ?array
     {
         return $this->has($key) ? (array) $this->bag[$key] : $default;
     }
 
-    public function getBool(string $key, bool $default = false): bool
+    public function getBool(string $key, ?bool $default = false): ?bool
     {
         return $this->has($key) ? (bool) $this->bag[$key] : $default;
     }
 
-    public function getEnum(string $key, string $enumFQN, ?BackedEnum $default = null): BackedEnum
+    public function getEnum(string $key, string $enumFQN, ?BackedEnum $default = null): ?BackedEnum
     {
         if (!$this->has($key)) {
             return $default;
@@ -81,22 +81,22 @@ class Bag implements BagInterface
         return $enumFQN::from($value);
     }
 
-    public function getDigits(string $key, string $default = ''): string
+    public function getDigits(string $key, ?string $default = ''): ?string
     {
-        return preg_replace('/\D/', '', $this->getString($key, $default));
+        return $this->has($key) ? preg_replace('/\D/', '', $this->getString($key)) : $default;
     }
 
-    public function getFloat(string $key, float $default = 0.0): float
+    public function getFloat(string $key, ?float $default = 0.0): ?float
     {
         return $this->has($key) ? (float) $this->bag[$key] : $default;
     }
 
-    public function getInt(string $key, int $default = 0): int
+    public function getInt(string $key, ?int $default = 0): ?int
     {
         return $this->has($key) ? (int) $this->bag[$key] : $default;
     }
 
-    public function getString(string $key, string $default = ''): string
+    public function getString(string $key, ?string $default = ''): ?string
     {
         return $this->has($key) ? (string) $this->bag[$key] : $default;
     }
