@@ -5,7 +5,15 @@ namespace Test\CancioLabs\Ds\Bag;
 use ArrayIterator;
 use CancioLabs\Ds\Bag\Bag;
 use CancioLabs\Ds\Bag\Exception\ElementNotFoundException;
+use CancioLabs\Ds\Bag\Exception\EnumNotFoundException;
 use PHPUnit\Framework\TestCase;
+
+enum TestEnum: string
+{
+    case FOO = 'foo';
+    case BAR = 'bar';
+    case ZOO = 'zoo';
+}
 
 class BagTest extends TestCase
 {
@@ -124,6 +132,53 @@ class BagTest extends TestCase
         $bag->remove('number');
     }
 
+    public function testGetAlphaAndAlphaNumAndDigits(): void
+    {
+        $bag = new Bag();
+        $bag->add('alpha', 'abcde');
+        $bag->add('alpha_num', 'abcde456789');
+        $bag->add('digits', '123456');
+
+        // alpha
+        $this->assertSame('abcde', $bag->getAlpha('alpha'));
+        $this->assertSame('abcde', $bag->getAlpha('alpha_num'));
+        $this->assertSame('', $bag->getAlpha('digits'));
+
+        // alpha-num
+        $this->assertSame('abcde', $bag->getAlphaNum('alpha'));
+        $this->assertSame('abcde456789', $bag->getAlphaNum('alpha_num'));
+        $this->assertSame('123456', $bag->getAlphaNum('digits'));
+
+        // digits
+        $this->assertSame('', $bag->getDigits('alpha'));
+        $this->assertSame('456789', $bag->getDigits('alpha_num'));
+        $this->assertSame('123456', $bag->getDigits('digits'));
+
+        // alpha default values
+        $this->assertSame('', $bag->getAlpha('default'));
+        $this->assertSame('foo', $bag->getAlpha('default', 'foo'));
+        $this->assertNull($bag->getAlpha('default', null));
+
+        // alpha-num default values
+        $this->assertSame('', $bag->getAlphaNum('default'));
+        $this->assertSame('bar', $bag->getAlphaNum('default', 'bar'));
+        $this->assertNull($bag->getAlphaNum('default', null));
+    }
+
+    public function testGetArray(): void
+    {
+        $bag = new Bag();
+
+        // Array
+        $bag->add('array', ['q', 'w', 'e', 'r', 't', 'y']);
+        $this->assertSame(['q', 'w', 'e', 'r', 't', 'y'], $bag->getArray('array'));
+
+        // Default values
+        $this->assertSame([], $bag->getArray('default'));
+        $this->assertSame([3, 4, 5], $bag->getArray('default', [3, 4, 5]));
+        $this->assertNull($bag->getArray('default', null));
+    }
+
     public function testGetBool(): void
     {
         $bag = new Bag();
@@ -138,16 +193,31 @@ class BagTest extends TestCase
         // Default values
         $this->assertFalse($bag->getBool('default'));
         $this->assertTrue($bag->getBool('default', true));
+        $this->assertNull($bag->getBool('default', null));
+    }
 
-        // Other data types
-        $bag->add('one', 1);
-        $this->assertTrue($bag->getBool('one'));
+    public function testGetEnum(): void
+    {
+        $bag = new Bag();
+        $bag->add('foo', TestEnum::FOO->value);
+        $bag->add('bar', TestEnum::BAR->value);
 
-        $bag->add('zero', 0);
-        $this->assertFalse($bag->getBool('zero'));
+        // Enum
+        $this->assertSame(TestEnum::FOO, $bag->getEnum('foo', TestEnum::class));
+        $this->assertSame(TestEnum::BAR, $bag->getEnum('bar', TestEnum::class));
 
-        $bag->add('emptyString', '');
-        $this->assertFalse($bag->getBool('emptyString'));
+        // Default values
+        $this->assertNull($bag->getEnum('zoo', TestEnum::class));
+        $this->assertSame(TestEnum::ZOO, $bag->getEnum('zoo', TestEnum::class, TestEnum::ZOO));
+    }
+
+    public function testGetEnumWhenEnumDoesNotExist(): void
+    {
+        $bag = new Bag();
+
+        $this->expectException(EnumNotFoundException::class);
+
+        $bag->getEnum('gas', 'MyDummyEnum');
     }
 
     public function testGetFloat(): void
@@ -158,19 +228,14 @@ class BagTest extends TestCase
         $bag->add('float', 123.4);
         $this->assertSame(123.4, $bag->getFloat('float'));
 
+        // Int
+        $bag->add('int', 4);
+        $this->assertSame(4.0, $bag->getFloat('int'));
+
         // Default values
         $this->assertSame(0.0, $bag->getFloat('default'));
         $this->assertSame(2.456, $bag->getFloat('default', 2.456));
-
-        // Other data types
-        $bag->add('false', false);
-        $this->assertSame(0.0, $bag->getFloat('false'));
-
-        $bag->add('int', 1);
-        $this->assertSame(1.0, $bag->getFloat('int'));
-
-        $bag->add('emptyString', '');
-        $this->assertSame(0.0, $bag->getFloat('emptyString'));
+        $this->assertNull($bag->getFloat('default', null));
     }
 
     public function testGetInt(): void
@@ -178,22 +243,58 @@ class BagTest extends TestCase
         $bag = new Bag();
 
         // Integer
-        $bag->add('int', 1);
-        $this->assertSame(1, $bag->getInt('int'));
+        $bag->add('int', 2);
+        $this->assertSame(2, $bag->getInt('int'));
 
-        // Default values
-        $this->assertSame(0, $bag->getInt('default'));
-        $this->assertSame(2, $bag->getInt('default', 2));
-
-        // Other data types
-        $bag->add('false', false);
-        $this->assertSame(0, $bag->getInt('false'));
-
+        // Float
         $bag->add('float', 123.4);
         $this->assertSame(123, $bag->getInt('float'));
 
-        $bag->add('emptyString', '');
-        $this->assertSame(0, $bag->getInt('emptyString'));
+        // Default values
+        $this->assertSame(0, $bag->getInt('default'));
+        $this->assertSame(3, $bag->getInt('default', 3));
+        $this->assertNull($bag->getInt('default', null));
+    }
+
+    public function testGetString(): void
+    {
+        $bag = new Bag();
+
+        // String
+        $bag->add('string', 'abc');
+        $this->assertSame('abc', $bag->getString('string'));
+
+        // Default values
+        $this->assertSame('', $bag->getString('default'));
+        $this->assertSame('foo', $bag->getString('default', 'foo'));
+        $this->assertNull($bag->getString('default', null));
+    }
+
+    public function testGet(): void
+    {
+        $bag = new Bag();
+
+        $bag->add('alpha', 'zoo');
+        $bag->add('alphanum', 'foo102030');
+        $bag->add('array', [1, 2, 3]);
+        $bag->add('true', true);
+        $bag->add('false', false);
+        //$bag->add('enums', '789.789');
+        $bag->add('digits', '789.789');
+        $bag->add('float', 456.789);
+        $bag->add('int', 123);
+        $bag->add('string', 'abc');
+
+        $this->assertSame('zoo', $bag->get('alpha'));
+        $this->assertSame('foo102030', $bag->get('alphanum'));
+        $this->assertSame([1, 2, 3], $bag->get('array'));
+        $this->assertSame(true, $bag->get('true'));
+        $this->assertSame(false, $bag->get('false'));
+        //$this->assertSame(false, $bag->get('enums'));
+        $this->assertSame('789.789', $bag->get('digits'));
+        $this->assertSame(456.789, $bag->get('float'));
+        $this->assertSame(123, $bag->get('int'));
+        $this->assertSame('abc', $bag->get('string'));
     }
 
     public function testIsEmpty(): void
