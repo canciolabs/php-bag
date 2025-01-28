@@ -149,4 +149,9 @@ class Bag implements BagInterface
         return new ArrayIterator($this->bag);
     }
 
+    public function toArray(): array
+    {
+        return $this->bag;
+    }
+
 }

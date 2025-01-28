@@ -108,4 +108,9 @@ interface BagInterface extends Countable, IteratorAggregate
      */
     public function remove(string $key): self;
 
+    /**
+     * Transform the bag into an array.
+     */
+    public function toArray(): array;
+
 }

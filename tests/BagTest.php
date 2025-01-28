@@ -370,4 +370,25 @@ class BagTest extends TestCase
         $this->assertInstanceOf(ArrayIterator::class, $it);
     }
 
+    public function testToArray(): void
+    {
+        $bag = new Bag();
+
+        $this->assertSame([], $bag->toArray());
+
+        $bag->add('string', 'abc');
+        $bag->add('int', 7);
+        $bag->add('float', 7.22);
+
+        $this->assertSame([
+            'string' => 'abc',
+            'int' => 7,
+            'float' => 7.22,
+        ], $bag->toArray());
+
+        $bag->clear();
+
+        $this->assertSame([], $bag->toArray());
+    }
+
 }
