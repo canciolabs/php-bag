@@ -5,6 +5,7 @@ namespace CancioLabs\Ds\Bag;
 use ArrayIterator;
 use BackedEnum;
 use CancioLabs\Ds\Bag\Exception\ElementNotFoundException;
+use CancioLabs\Ds\Bag\Exception\EnumNotFoundException;
 use Traversable;
 
 class Bag implements BagInterface
@@ -72,6 +73,10 @@ class Bag implements BagInterface
 
     public function getEnum(string $key, string $enumFQN, ?BackedEnum $default = null): ?BackedEnum
     {
+        if (!enum_exists($enumFQN)) {
+            throw new EnumNotFoundException($enumFQN);
+        }
+
         if (!$this->has($key)) {
             return $default;
         }
