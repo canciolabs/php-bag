@@ -51,12 +51,12 @@ class Bag implements BagInterface
         return $this;
     }
 
-    public function getAlpha(string $key, ?string $default = null): ?string
+    public function getAlpha(string $key, ?string $default = ''): ?string
     {
         return $this->has($key) ? preg_replace('/[^[:alpha:]]/', '', $this->get($key)) : $default;
     }
 
-    public function getAlphaNum(string $key, ?string $default = null): ?string
+    public function getAlphaNum(string $key, ?string $default = ''): ?string
     {
         return $this->has($key) ? preg_replace('/[^[:alnum:]]/', '', $this->get($key)) : $default;
     }
