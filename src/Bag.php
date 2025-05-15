@@ -53,22 +53,22 @@ class Bag implements BagInterface
 
     public function getAlpha(string $key, ?string $default = ''): ?string
     {
-        return $this->has($key) ? preg_replace('/[^[:alpha:]]/', '', $this->get($key)) : $default;
+        return $this->isSet($key) ? preg_replace('/[^[:alpha:]]/', '', $this->get($key)) : $default;
     }
 
     public function getAlphaNum(string $key, ?string $default = ''): ?string
     {
-        return $this->has($key) ? preg_replace('/[^[:alnum:]]/', '', $this->get($key)) : $default;
+        return $this->isSet($key) ? preg_replace('/[^[:alnum:]]/', '', $this->get($key)) : $default;
     }
 
     public function getArray(string $key, ?array $default = []): ?array
     {
-        return $this->has($key) ? (array) $this->bag[$key] : $default;
+        return $this->isSet($key) ? (array) $this->bag[$key] : $default;
     }
 
     public function getBool(string $key, ?bool $default = false): ?bool
     {
-        return $this->has($key) ? (bool) $this->bag[$key] : $default;
+        return $this->isSet($key) ? (bool) $this->bag[$key] : $default;
     }
 
     public function getEnum(string $key, string $enumFQN, ?BackedEnum $default = null): ?BackedEnum
@@ -88,27 +88,32 @@ class Bag implements BagInterface
 
     public function getDigits(string $key, ?string $default = ''): ?string
     {
-        return $this->has($key) ? preg_replace('/\D/', '', $this->getString($key)) : $default;
+        return $this->isSet($key) ? preg_replace('/\D/', '', $this->getString($key)) : $default;
     }
 
     public function getFloat(string $key, ?float $default = 0.0): ?float
     {
-        return $this->has($key) ? (float) $this->bag[$key] : $default;
+        return $this->isSet($key) ? (float) $this->bag[$key] : $default;
     }
 
     public function getInt(string $key, ?int $default = 0): ?int
     {
-        return $this->has($key) ? (int) $this->bag[$key] : $default;
+        return $this->isSet($key) ? (int) $this->bag[$key] : $default;
     }
 
     public function getString(string $key, ?string $default = ''): ?string
     {
-        return $this->has($key) ? (string) $this->bag[$key] : $default;
+        return $this->isSet($key) ? (string) $this->bag[$key] : $default;
     }
 
     public function get(string $key, mixed $default = null): mixed
     {
-        return $this->has($key) ? $this->bag[$key] : $default;
+        return $this->isSet($key) ? $this->bag[$key] : $default;
+    }
+
+    public function isSet(string $key): bool
+    {
+        return $this->has($key) && $this->bag[$key] !== null;
     }
 
     public function has(string $key): bool

@@ -21,7 +21,6 @@ interface BagInterface extends Countable, IteratorAggregate
     public function keys(): array;
 
     /**
-    /**
      * Returns all values of the bag.
      */
     public function values(): array;
@@ -37,23 +36,22 @@ interface BagInterface extends Countable, IteratorAggregate
     public function add(string $key, mixed $value): self;
 
     /**
-     * Returns the alpha value of a given key.
-     * Returns the default value if the key doesn't exist.
+     * Returns the alpha value of a given key and the default value if the key doesn't exist.
      */
     public function getAlpha(string $key, ?string $default = null): ?string;
 
     /**
-     * Returns the alphanumeric value of a given key, and the default value if the key doesn't exist.
+     * Returns the alphanumeric value of a given key and the default value if the key doesn't exist.
      */
     public function getAlphaNum(string $key, ?string $default = null): ?string;
 
     /**
-     * Returns the array value of a given key, and the default value if the key doesn't exist.
+     * Returns the array value of a given key and the default value if the key doesn't exist.
      */
     public function getArray(string $key, ?array $default = []): ?array;
 
     /**
-     * Returns the boolean value of a given key, and the default value if the key doesn't exist.
+     * Returns the boolean value of a given key and the default value if the key doesn't exist.
      */
     public function getBool(string $key, ?bool $default = false): ?bool;
 
@@ -64,32 +62,37 @@ interface BagInterface extends Countable, IteratorAggregate
     public function getEnum(string $key, string $enumFQN, ?BackedEnum $default = null): ?BackedEnum;
 
     /**
-     * Returns the digit value of a given key, and the default value if the key doesn't exist.
+     * Returns the digit value of a given key and the default value if the key doesn't exist.
      */
     public function getDigits(string $key, ?string $default = ''): ?string;
 
     /**
-     * Returns the float value of a given key, and the default value if the key doesn't exist.
+     * Returns the float value of a given key and the default value if the key doesn't exist.
      */
     public function getFloat(string $key, ?float $default = 0.0): ?float;
 
     /**
-     * Returns the integer value of a given key, and the default value if the key doesn't exist.
+     * Returns the integer value of a given key and the default value if the key doesn't exist.
      */
     public function getInt(string $key, ?int $default = 0): ?int;
 
     /**
-     * Returns the string value of a given key, and the default value if the key doesn't exist.
+     * Returns the string value of a given key and the default value if the key doesn't exist.
      */
     public function getString(string $key, ?string $default = ''): ?string;
 
     /**
-     * Returns the value of a given key, and the default value if the key doesn't exist.
+     * Returns the value of a given key and the default value if the key doesn't exist.
      */
     public function get(string $key, mixed $default = null): mixed;
 
     /**
-     * Checks if a given key exist in the bag.
+     * Checks if a given key exists and is not null.
+     */
+    public function isSet(string $key): bool;
+
+    /**
+     * Checks if a given key exists in the bag.
      */
     public function has(string $key): bool;
 
