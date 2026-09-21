@@ -91,6 +91,8 @@ interface BagInterface extends Countable, IteratorAggregate
      */
     public function getInt(string $key, ?int $default = 0): ?int;
 
+    public function getJson(string $key, mixed $default = null, bool $assoc = true): mixed;
+
     /**
      * Returns the string value of a given key and the default value if the key doesn't exist.
      */

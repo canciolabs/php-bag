@@ -153,6 +153,21 @@ class Bag implements BagInterface
         return $this->isSet($key) ? (int) $this->bag[$key] : $default;
     }
 
+    public function getJson(string $key, mixed $default = null, bool $assoc = true): mixed
+    {
+        if (!$this->isSet($key)) {
+            return $default;
+        }
+
+        $value = $this->get($key);
+
+        if (is_string($value)) {
+            return json_decode($value, $assoc, 512, JSON_THROW_ON_ERROR);
+        }
+
+        throw new InvalidArgumentException("The value for key '$key' is not a valid JSON string.");
+    }
+
     public function getString(string $key, ?string $default = ''): ?string
     {
         return $this->isSet($key) ? (string) $this->bag[$key] : $default;
