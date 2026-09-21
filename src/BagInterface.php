@@ -139,6 +139,12 @@ interface BagInterface extends Countable, IteratorAggregate
     public function filter(callable $criteria): self;
 
     /**
+     * Applies a callback function to each element in the bag and returns a new bag of the results.
+     * The callback function receives the key and value of each element in the bag.
+     */
+    public function map(callable $callback): self;
+
+    /**
      * Returns true if all elements match the criteria.
      * The criteria is a callable that receives the key and value of each element in the bag.
      */

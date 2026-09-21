@@ -224,6 +224,17 @@ class Bag implements BagInterface
         return new self($filteredBag);
     }
 
+    public function map(callable $callback): self
+    {
+        $mappedBag = [];
+
+        foreach ($this->bag as $key => $value) {
+            $mappedBag[$key] = $callback($key, $value);
+        }
+
+        return new self($mappedBag);
+    }
+
     public function every(callable $criteria): bool
     {
         foreach ($this->bag as $key => $value) {
