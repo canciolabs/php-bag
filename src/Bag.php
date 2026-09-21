@@ -6,6 +6,9 @@ use ArrayIterator;
 use BackedEnum;
 use CancioLabs\Ds\Bag\Exception\ElementNotFoundException;
 use CancioLabs\Ds\Bag\Exception\EnumNotFoundException;
+use DateTime;
+use DateTimeInterface;
+use InvalidArgumentException;
 use Traversable;
 
 class Bag implements BagInterface
@@ -95,6 +98,28 @@ class Bag implements BagInterface
     public function getBool(string $key, ?bool $default = false): ?bool
     {
         return $this->isSet($key) ? (bool) $this->bag[$key] : $default;
+    }
+
+    public function getDateTime(string $key, ?string $format = 'Y-m-d H:i:s', ?DateTimeInterface $default = null): ?DateTimeInterface
+    {
+        if (!$this->isSet($key)) {
+            return $default;
+        }
+
+        $value = $this->get($key);
+
+        if ($value instanceof DateTimeInterface) {
+            return $value;
+        }
+
+        if (is_string($value)) {
+            $dateTime = DateTime::createFromFormat($format, $value);
+            if ($dateTime !== false) {
+                return $dateTime;
+            }
+        }
+
+        throw new InvalidArgumentException("The value for key '$key' is not a valid DateTime string or object.");
     }
 
     public function getEnum(string $key, string $enumFQN, ?BackedEnum $default = null): ?BackedEnum

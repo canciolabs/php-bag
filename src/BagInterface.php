@@ -4,6 +4,7 @@ namespace CancioLabs\Ds\Bag;
 
 use BackedEnum;
 use Countable;
+use DateTimeInterface;
 use IteratorAggregate;
 
 interface BagInterface extends Countable, IteratorAggregate
@@ -66,6 +67,8 @@ interface BagInterface extends Countable, IteratorAggregate
      * Returns the boolean value of a given key and the default value if the key doesn't exist.
      */
     public function getBool(string $key, ?bool $default = false): ?bool;
+
+    public function getDateTime(string $key, ?string $format = 'Y-m-d H:i:s', ?DateTimeInterface $default = null): ?DateTimeInterface;
 
     /**
      * Returns an enum case of a given key and a backed enum full qualified name,
