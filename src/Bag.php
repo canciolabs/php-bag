@@ -79,7 +79,7 @@ class Bag implements BagInterface
 
     public function getArray(string $key, ?array $default = []): ?array
     {
-        return $this->isSet($key) ? (array)$this->bag[$key] : $default;
+        return $this->isSet($key) ? (array) $this->get($key) : $default;
     }
 
     public function getBag(string $key, self|array|null $default = []): ?self
@@ -92,12 +92,12 @@ class Bag implements BagInterface
             return $default instanceof self ? $default : new self((array) $default);
         }
 
-        return new self((array)$this->bag[$key]);
+        return new self((array) $this->get($key));
     }
 
     public function getBool(string $key, ?bool $default = false): ?bool
     {
-        return $this->isSet($key) ? (bool) $this->bag[$key] : $default;
+        return $this->isSet($key) ? (bool) $this->get($key) : $default;
     }
 
     public function getDateTime(string $key, ?string $format = 'Y-m-d H:i:s', ?DateTimeInterface $default = null): ?DateTimeInterface
@@ -145,12 +145,12 @@ class Bag implements BagInterface
 
     public function getFloat(string $key, ?float $default = 0.0): ?float
     {
-        return $this->isSet($key) ? (float) $this->bag[$key] : $default;
+        return $this->isSet($key) ? (float) $this->get($key) : $default;
     }
 
     public function getInt(string $key, ?int $default = 0): ?int
     {
-        return $this->isSet($key) ? (int) $this->bag[$key] : $default;
+        return $this->isSet($key) ? (int) $this->get($key) : $default;
     }
 
     public function getJson(string $key, mixed $default = null, bool $assoc = true): mixed
@@ -170,22 +170,26 @@ class Bag implements BagInterface
 
     public function getString(string $key, ?string $default = ''): ?string
     {
-        return $this->isSet($key) ? (string) $this->bag[$key] : $default;
+        return $this->isSet($key) ? (string) $this->get($key) : $default;
     }
 
     public function get(string $key, mixed $default = null): mixed
     {
-        return $this->isSet($key) ? $this->bag[$key] : $default;
+        $resolved = $this->resolveKey($key);
+
+        return $resolved['exists'] && $resolved['value'] !== null ? $resolved['value'] : $default;
     }
 
     public function isSet(string $key): bool
     {
-        return $this->has($key) && $this->bag[$key] !== null;
+        $resolved = $this->resolveKey($key);
+
+        return $resolved['exists'] && $resolved['value'] !== null;
     }
 
     public function has(string $key): bool
     {
-        return array_key_exists($key, $this->bag);
+        return $this->resolveKey($key)['exists'];
     }
 
     public function isEmpty(): bool
@@ -304,6 +308,25 @@ class Bag implements BagInterface
     public function toJson(): string
     {
         return json_encode($this->bag, JSON_THROW_ON_ERROR);
+    }
+
+    private function resolveKey(string $key): array
+    {
+        if (array_key_exists($key, $this->bag)) {
+            return ['exists' => true, 'value' => $this->bag[$key]];
+        }
+
+        $value = $this->bag;
+
+        foreach (explode('.', $key) as $segment) {
+            if (!is_array($value) || !array_key_exists($segment, $value)) {
+                return ['exists' => false, 'value' => null];
+            }
+
+            $value = $value[$segment];
+        }
+
+        return ['exists' => true, 'value' => $value];
     }
 
 }
