@@ -83,6 +83,7 @@ class Bag implements BagInterface
 
         $value = $this->get($key);
 
+        /** @var BackedEnum $enumFQN */
         return $enumFQN::from($value);
     }
 
