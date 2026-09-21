@@ -132,6 +132,12 @@ interface BagInterface extends Countable, IteratorAggregate
     public function remove(string $key): self;
 
     /**
+     * Returns true if it finds at least one element that matches the criteria.
+     * The criteria is a callable that receives the key and value of each element in the bag.
+     */
+    public function some(callable $criteria): bool;
+
+    /**
      * Transform the bag into a dot notation bag.
      * @return self
      */

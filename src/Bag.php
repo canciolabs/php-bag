@@ -211,6 +211,17 @@ class Bag implements BagInterface
         return new ArrayIterator($this->bag);
     }
 
+    public function some(callable $criteria): bool
+    {
+        foreach ($this->bag as $key => $value) {
+            if ($criteria($key, $value)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public function toDotNotation(): BagInterface
     {
         $flatten = static function (array $items, string $prefix = '') use (&$flatten): array {
