@@ -18,17 +18,17 @@ class Bag implements BagInterface
         $this->set($bag);
     }
 
-    public function all(): array
+    public function getAll(): array
     {
         return $this->bag;
     }
 
-    public function keys(): array
+    public function getKeys(): array
     {
         return array_keys($this->bag);
     }
 
-    public function values(): array
+    public function getValues(): array
     {
         return array_values($this->bag);
     }

@@ -10,20 +10,21 @@ interface BagInterface extends Countable, IteratorAggregate
 {
 
     /**
-     * Returns all key-value pairs of the bag.
+     * Returns all elements of the bag.
+     * Alias for toArray() method.
      */
-    public function all(): array;
+    public function getAll(): array;
 
     /**
      * Returns all keys of the bag.
      * @return string[]
      */
-    public function keys(): array;
+    public function getKeys(): array;
 
     /**
      * Returns all values of the bag.
      */
-    public function values(): array;
+    public function getValues(): array;
 
     /**
      * Replaces the current bag with new key-value pairs.
