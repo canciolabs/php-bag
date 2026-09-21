@@ -167,4 +167,10 @@ interface BagInterface extends Countable, IteratorAggregate
      */
     public function toArray(): array;
 
+    /**
+     * Transform the bag into a JSON string.
+     * @throws \JsonException
+     */
+    public function toJson(): string;
+
 }

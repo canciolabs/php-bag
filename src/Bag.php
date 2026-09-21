@@ -286,4 +286,9 @@ class Bag implements BagInterface
         return $this->bag;
     }
 
+    public function toJson(): string
+    {
+        return json_encode($this->bag, JSON_THROW_ON_ERROR);
+    }
+
 }
