@@ -168,6 +168,30 @@ class Bag implements BagInterface
         return new ArrayIterator($this->bag);
     }
 
+    public function toDotNotation(): BagInterface
+    {
+        $flatten = static function (array $items, string $prefix = '') use (&$flatten): array {
+            $flattened = [];
+
+            foreach ($items as $key => $value) {
+                $dotKey = $prefix === '' ? (string) $key : $prefix . '.' . $key;
+
+                if (is_array($value) && $value !== []) {
+                    $flattened = array_merge($flattened, $flatten($value, $dotKey));
+                    continue;
+                }
+
+                $flattened[$dotKey] = $value;
+            }
+
+            return $flattened;
+        };
+
+        $this->bag = $flatten($this->bag);
+
+        return $this;
+    }
+
     public function toArray(): array
     {
         return $this->bag;
