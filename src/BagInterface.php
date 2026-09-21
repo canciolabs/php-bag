@@ -27,6 +27,11 @@ interface BagInterface extends Countable, IteratorAggregate
     public function getValues(): array;
 
     /**
+     * Merges the current bag with one or more other bags.
+     */
+    public function merge(self|array ...$bags): self;
+
+    /**
      * Replaces the current bag with new key-value pairs.
      */
     public function set(array $bag): self;

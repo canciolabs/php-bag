@@ -33,6 +33,19 @@ class Bag implements BagInterface
         return array_values($this->bag);
     }
 
+    public function merge(array|BagInterface ...$bags): BagInterface
+    {
+        foreach ($bags as $bag) {
+            if ($bag instanceof BagInterface) {
+                $this->bag = array_merge($this->bag, $bag->toArray());
+            } elseif (is_array($bag)) {
+                $this->bag = array_merge($this->bag, $bag);
+            }
+        }
+
+        return $this;
+    }
+
     public function set(array $bag): self
     {
         $this->bag = [];
