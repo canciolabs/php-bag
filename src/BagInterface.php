@@ -57,6 +57,12 @@ interface BagInterface extends Countable, IteratorAggregate
     public function getArray(string $key, ?array $default = []): ?array;
 
     /**
+     * Convert and return the array value of a given key into a BagInterface instance,
+     * and the default value if the key doesn't exist.
+     */
+    public function getBag(string $key, ?array $default = []): ?self;
+
+    /**
      * Returns the boolean value of a given key and the default value if the key doesn't exist.
      */
     public function getBool(string $key, ?bool $default = false): ?bool;
