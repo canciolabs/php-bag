@@ -132,6 +132,13 @@ interface BagInterface extends Countable, IteratorAggregate
     public function remove(string $key): self;
 
     /**
+     * Filters the bag based on a given criteria.
+     * The criteria is a callable that receives the key and value of each element in the bag.
+     * It returns a new bag containing only the elements that match the criteria.
+     */
+    public function filter(callable $criteria): self;
+
+    /**
      * Returns true if all elements match the criteria.
      * The criteria is a callable that receives the key and value of each element in the bag.
      */

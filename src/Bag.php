@@ -211,6 +211,19 @@ class Bag implements BagInterface
         return new ArrayIterator($this->bag);
     }
 
+    public function filter(callable $criteria): self
+    {
+        $filteredBag = [];
+
+        foreach ($this->bag as $key => $value) {
+            if ($criteria($key, $value)) {
+                $filteredBag[$key] = $value;
+            }
+        }
+
+        return new self($filteredBag);
+    }
+
     public function every(callable $criteria): bool
     {
         foreach ($this->bag as $key => $value) {
