@@ -117,6 +117,11 @@ interface BagInterface extends Countable, IteratorAggregate
     public function isEmpty(): bool;
 
     /**
+     * Check if the bag is not empty.
+     */
+    public function isNotEmpty(): bool;
+
+    /**
      * Removes all elements from the bag.
      */
     public function clear(): self;

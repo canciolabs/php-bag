@@ -178,6 +178,11 @@ class Bag implements BagInterface
         return empty($this->bag);
     }
 
+    public function isNotEmpty(): bool
+    {
+        return !empty($this->bag);
+    }
+
     public function clear(): self
     {
         $this->bag = [];
