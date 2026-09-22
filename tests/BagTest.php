@@ -4,6 +4,7 @@ namespace Test\CancioLabs\Ds\Bag;
 
 use ArrayIterator;
 use CancioLabs\Ds\Bag\Bag;
+use CancioLabs\Ds\Bag\BagInterface;
 use CancioLabs\Ds\Bag\Exception\ElementNotFoundException;
 use CancioLabs\Ds\Bag\Exception\EnumNotFoundException;
 use DateTime;
@@ -97,6 +98,7 @@ class BagTest extends TestCase
             'nested' => ['name' => 'Ada'],
         ]);
         $defaultBag = new Bag(['default' => true]);
+        $defaultBagInterface = $this->createMock(BagInterface::class);
 
         $this->assertSame(['one', 'two'], $bag->getArray('list'));
         $this->assertSame(['value'], $bag->getArray('scalar'));
@@ -106,6 +108,7 @@ class BagTest extends TestCase
         $this->assertSame(['name' => 'Ada'], $bag->getBag('nested')->toArray());
         $this->assertSame(['fallback' => true], $bag->getBag('missing', ['fallback' => true])->toArray());
         $this->assertSame($defaultBag, $bag->getBag('missing', $defaultBag));
+        $this->assertSame($defaultBagInterface, $bag->getBag('missing', $defaultBagInterface));
         $this->assertNull($bag->getBag('missing', null));
     }
 

@@ -82,14 +82,14 @@ class Bag implements BagInterface
         return $this->isSet($key) ? (array) $this->get($key) : $default;
     }
 
-    public function getBag(string $key, self|array|null $default = []): ?self
+    public function getBag(string $key, BagInterface|array|null $default = []): ?BagInterface
     {
         if (!$this->isSet($key)) {
             if ($default === null) {
                 return null;
             }
 
-            return $default instanceof self ? $default : new self((array) $default);
+            return $default instanceof BagInterface ? $default : new self((array) $default);
         }
 
         return new self((array) $this->get($key));
