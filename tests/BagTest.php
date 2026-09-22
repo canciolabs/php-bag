@@ -298,6 +298,24 @@ class BagTest extends TestCase
         ], $bag->toArray());
     }
 
+    public function testDotNotationPrefersExactDottedKeysRegardlessOfInputOrder(): void
+    {
+        $bags = [
+            new Bag([
+                'user.name' => 'Exact value',
+                'user' => ['name' => 'Nested value'],
+            ]),
+            new Bag([
+                'user' => ['name' => 'Nested value'],
+                'user.name' => 'Exact value',
+            ]),
+        ];
+
+        foreach ($bags as $bag) {
+            $this->assertSame(['user.name' => 'Exact value'], $bag->toDotNotation()->toArray());
+        }
+    }
+
     public function testToJsonEncodesBagContents(): void
     {
         $bag = new Bag(['name' => 'Ada', 'active' => true]);

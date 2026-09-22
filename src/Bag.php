@@ -298,6 +298,14 @@ class Bag implements BagInterface
 
     public function toDotNotation(): BagInterface
     {
+        $literalDotKeys = [];
+
+        foreach ($this->bag as $key => $value) {
+            if (is_string($key) && str_contains($key, '.') && (!is_array($value) || $value === [])) {
+                $literalDotKeys[$key] = $value;
+            }
+        }
+
         $flatten = static function (array $items, string $prefix = '') use (&$flatten): array {
             $flattened = [];
 
@@ -315,7 +323,7 @@ class Bag implements BagInterface
             return $flattened;
         };
 
-        $this->bag = $flatten($this->bag);
+        $this->bag = array_replace($flatten($this->bag), $literalDotKeys);
 
         return $this;
     }

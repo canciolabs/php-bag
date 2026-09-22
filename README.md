@@ -157,6 +157,9 @@ $bag->toDotNotation()->toArray();
 // ]
 ```
 
+When a flattened path conflicts with a literal dotted leaf key, the literal
+key takes precedence regardless of its insertion order.
+
 ## Collection operations
 
 `filter()` and `map()` return a new bag. `every()` and `some()` return a
