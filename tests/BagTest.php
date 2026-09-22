@@ -37,6 +37,7 @@ class BagTest extends TestCase
         $this->assertSame(['name' => 'Ada', 'active' => true], $bag->getAll());
         $this->assertSame(['name', 'active'], $bag->getKeys());
         $this->assertSame(['Ada', true], $bag->getValues());
+        $this->assertSame([10], (new Bag([10 => 'ten']))->getKeys());
         $this->assertSame($bag->getAll(), $bag->toArray());
         $this->assertCount(2, $bag);
         $this->assertInstanceOf(ArrayIterator::class, $bag->getIterator());

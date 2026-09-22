@@ -18,7 +18,7 @@ interface BagInterface extends Countable, IteratorAggregate
 
     /**
      * Returns all keys of the bag.
-     * @return string[]
+     * @return array<array-key>
      */
     public function getKeys(): array;
 
