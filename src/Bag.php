@@ -9,6 +9,7 @@ use CancioLabs\Ds\Bag\Exception\EnumNotFoundException;
 use DateTime;
 use DateTimeInterface;
 use InvalidArgumentException;
+use Stringable;
 use Traversable;
 
 class Bag implements BagInterface
@@ -174,11 +175,15 @@ class Bag implements BagInterface
 
     public function getString(string $key, ?string $default = ''): ?string
     {
-        if ($this->isSet($key) && is_array($this->get($key))) {
-            throw new InvalidArgumentException("The value for key '$key' is an array, not a string.");
+        if (!$this->isSet($key)) {
+            return $default;
         }
 
-        return $this->isSet($key) ? (string) $this->get($key) : $default;
+        $value = $this->get($key);
+
+        return is_scalar($value) || $value instanceof Stringable
+            ? (string) $value
+            : $default;
     }
 
     public function get(string $key, mixed $default = null): mixed

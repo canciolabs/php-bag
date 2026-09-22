@@ -94,7 +94,7 @@ interface BagInterface extends Countable, IteratorAggregate
     public function getJson(string $key, mixed $default = null, bool $assoc = true): mixed;
 
     /**
-     * Returns the string value of a given key and the default value if the key doesn't exist.
+     * Returns a scalar or Stringable value as a string, or the default value when it does not exist or cannot be stringified.
      */
     public function getString(string $key, ?string $default = ''): ?string;
 

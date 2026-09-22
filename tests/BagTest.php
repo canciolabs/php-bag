@@ -81,15 +81,18 @@ class BagTest extends TestCase
 
         $this->assertSame('Ab', $bag->getAlpha('alpha'));
         $this->assertSame('A1b', $bag->getAlphaNum('alpha'));
-        $this->assertSame('Array', @$bag->getAlpha('array'));
-        $this->assertSame('Array', @$bag->getAlphaNum('array'));
+        $this->assertSame('', $bag->getAlpha('array'));
+        $this->assertSame('', $bag->getAlphaNum('array'));
         $this->assertSame('1', $bag->getDigits('alpha'));
+        $this->assertSame('', $bag->getDigits('array'));
         $this->assertSame(12, $bag->getInt('number'));
         $this->assertSame(12.7, $bag->getFloat('number'));
         $this->assertTrue($bag->getBool('truthy'));
         $this->assertFalse($bag->getBool('falsy'));
         $this->assertSame('42', $bag->getString('value'));
         $this->assertSame('Stringable value', $bag->getString('stringable'));
+        $this->assertSame('', $bag->getString('array'));
+        $this->assertSame('fallback', $bag->getString('array', 'fallback'));
 
         $this->assertSame('fallback', $bag->get('missing', 'fallback'));
         $this->assertSame('', $bag->getAlpha('missing'));
