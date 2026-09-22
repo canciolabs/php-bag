@@ -105,7 +105,7 @@ class BagTest extends TestCase
             'nested_bag' => $nestedBag,
         ]);
         $defaultBag = new Bag(['default' => true]);
-        $defaultBagInterface = $this->createMock(BagInterface::class);
+        $defaultBagInterface = $this->createStub(BagInterface::class);
 
         $this->assertSame(['one', 'two'], $bag->getArray('list'));
         $this->assertSame(['value'], $bag->getArray('scalar'));
