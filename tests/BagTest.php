@@ -6,388 +6,278 @@ use ArrayIterator;
 use CancioLabs\Ds\Bag\Bag;
 use CancioLabs\Ds\Bag\Exception\ElementNotFoundException;
 use CancioLabs\Ds\Bag\Exception\EnumNotFoundException;
+use DateTime;
+use DateTimeImmutable;
+use InvalidArgumentException;
+use JsonException;
 use PHPUnit\Framework\TestCase;
+use stdClass;
 
 enum TestEnum: string
 {
-    case FOO = 'foo';
-    case BAR = 'bar';
-    case ZOO = 'zoo';
+    case Foo = 'foo';
+    case Bar = 'bar';
+    case Default = 'default';
 }
 
 class BagTest extends TestCase
 {
-
-    public function testConstructor(): void
+    public function testConstructingAndInspectingABag(): void
     {
-        // When arg is empty
-        $bag1 = new Bag();
-        $this->assertTrue($bag1->isEmpty());
+        $emptyBag = new Bag();
+        $bag = new Bag(['name' => 'Ada', 'active' => true]);
 
-        // When arg not empty
-        $bag2 = new Bag(['number' => 1, 'fruit' => 'banana']);
-        $this->assertSame(['number' => 1, 'fruit' => 'banana'], $bag2->getAll());
+        $this->assertTrue($emptyBag->isEmpty());
+        $this->assertSame(['name' => 'Ada', 'active' => true], $bag->getAll());
+        $this->assertSame(['name', 'active'], $bag->getKeys());
+        $this->assertSame(['Ada', true], $bag->getValues());
+        $this->assertSame($bag->getAll(), $bag->toArray());
+        $this->assertCount(2, $bag);
+        $this->assertInstanceOf(ArrayIterator::class, $bag->getIterator());
+        $this->assertSame($bag->getAll(), iterator_to_array($bag));
     }
 
-    public function testAll(): void
+    public function testSettingAddingAndMergingValues(): void
     {
-        $bag = new Bag();
+        $bag = new Bag(['obsolete' => true]);
 
-        // Initial state
-        $this->assertSame([], $bag->getAll());
+        $this->assertSame($bag, $bag->set(['name' => 'Ada']));
+        $this->assertSame($bag, $bag->add('role', 'Mathematician'));
+        $this->assertSame(
+            $bag,
+            $bag->merge(['active' => true], new Bag(['name' => 'Ada Lovelace']))
+        );
 
-        // With one value
-        $bag->add('number', 1);
         $this->assertSame([
-            'number' => 1,
-        ], $bag->getAll());
-
-        // With two values
-        $bag->add('fruit', 'banana');
-        $this->assertSame([
-            'number' => 1,
-            'fruit' => 'banana',
-        ], $bag->getAll());
+            'name' => 'Ada Lovelace',
+            'role' => 'Mathematician',
+            'active' => true,
+        ], $bag->toArray());
     }
 
-    public function testKeys(): void
+    public function testScalarAndSanitizingGetters(): void
     {
-        $bag = new Bag();
+        $bag = new Bag([
+            'alpha' => 'A-1_b!',
+            'number' => '12.7',
+            'truthy' => '1',
+            'falsy' => false,
+            'value' => 42,
+        ]);
 
-        // Initial state
-        $this->assertSame([], $bag->getKeys());
+        $this->assertSame('Ab', $bag->getAlpha('alpha'));
+        $this->assertSame('A1b', $bag->getAlphaNum('alpha'));
+        $this->assertSame('1', $bag->getDigits('alpha'));
+        $this->assertSame(12, $bag->getInt('number'));
+        $this->assertSame(12.7, $bag->getFloat('number'));
+        $this->assertTrue($bag->getBool('truthy'));
+        $this->assertFalse($bag->getBool('falsy'));
+        $this->assertSame('42', $bag->getString('value'));
 
-        // With one value
-        $bag->add('number', 1);
-        $this->assertSame(['number'], $bag->getKeys());
-
-        // With two values
-        $bag->add('fruit', 'banana');
-        $this->assertSame(['number', 'fruit'], $bag->getKeys());
+        $this->assertSame('fallback', $bag->get('missing', 'fallback'));
+        $this->assertSame('fallback', $bag->getAlpha('missing', 'fallback'));
+        $this->assertSame('fallback', $bag->getAlphaNum('missing', 'fallback'));
+        $this->assertSame('fallback', $bag->getDigits('missing', 'fallback'));
+        $this->assertSame(99, $bag->getInt('missing', 99));
+        $this->assertSame(9.9, $bag->getFloat('missing', 9.9));
+        $this->assertTrue($bag->getBool('missing', true));
+        $this->assertSame('fallback', $bag->getString('missing', 'fallback'));
     }
 
-    public function testValues(): void
+    public function testArrayAndBagGetters(): void
     {
-        $bag = new Bag();
+        $bag = new Bag([
+            'list' => ['one', 'two'],
+            'scalar' => 'value',
+            'nested' => ['name' => 'Ada'],
+        ]);
+        $defaultBag = new Bag(['default' => true]);
 
-        // Initial state
-        $this->assertSame([], $bag->getValues());
+        $this->assertSame(['one', 'two'], $bag->getArray('list'));
+        $this->assertSame(['value'], $bag->getArray('scalar'));
+        $this->assertSame(['fallback'], $bag->getArray('missing', ['fallback']));
+        $this->assertNull($bag->getArray('missing', null));
 
-        // With one value
-        $bag->add('number', 1);
-        $this->assertSame([1], $bag->getValues());
-
-        // With two values
-        $bag->add('fruit', 'banana');
-        $this->assertSame([1, 'banana'], $bag->getValues());
+        $this->assertSame(['name' => 'Ada'], $bag->getBag('nested')->toArray());
+        $this->assertSame(['fallback' => true], $bag->getBag('missing', ['fallback' => true])->toArray());
+        $this->assertSame($defaultBag, $bag->getBag('missing', $defaultBag));
+        $this->assertNull($bag->getBag('missing', null));
     }
 
-    public function testSet(): void
+    public function testDateTimeGetterHandlesInstancesStringsDefaultsAndInvalidValues(): void
     {
-        $bag = new Bag();
+        $immutable = new DateTimeImmutable('2026-09-21 10:30:00');
+        $default = new DateTimeImmutable('2020-01-01 00:00:00');
+        $bag = new Bag([
+            'instance' => $immutable,
+            'formatted' => '21/09/2026',
+            'invalid' => 'not a date',
+            'number' => 123,
+        ]);
 
-        $bag->set(['number' => 1, 'fruit' => 'banana']);
-        $this->assertSame(['number' => 1, 'fruit' => 'banana'], $bag->getAll());
+        $this->assertSame($immutable, $bag->getDateTime('instance'));
+        $this->assertInstanceOf(DateTime::class, $bag->getDateTime('formatted', 'd/m/Y'));
+        $this->assertSame('2026-09-21', $bag->getDateTime('formatted', 'd/m/Y')->format('Y-m-d'));
+        $this->assertSame($default, $bag->getDateTime('missing', 'Y-m-d', $default));
 
-        $bag->set(['text' => 'Lorem ipsum...', 'is_created_by_human' => false]);
-        $this->assertSame(['text' => 'Lorem ipsum...', 'is_created_by_human' => false], $bag->getAll());
+        $this->expectException(InvalidArgumentException::class);
+        $bag->getDateTime('invalid');
     }
 
-    public function testAddHasAndRemove(): void
+    public function testDateTimeGetterRejectsNonDateValues(): void
     {
-        $bag = new Bag();
+        $bag = new Bag(['number' => 123]);
 
-        // Initial state
-        $this->assertFalse($bag->has('number'));
-        $this->assertFalse($bag->has('fruit'));
-
-        // With one value
-        $bag->add('number', 1);
-        $this->assertTrue($bag->has('number'));
-        $this->assertFalse($bag->has('fruit'));
-
-        // With two values
-        $bag->add('fruit', 'banana');
-        $this->assertTrue($bag->has('number'));
-        $this->assertTrue($bag->has('fruit'));
-
-        // Remove one value
-        $bag->remove('number');
-        $this->assertFalse($bag->has('number'));
-        $this->assertTrue($bag->has('fruit'));
-
-        // Remove two values
-        $bag->remove('fruit');
-        $this->assertFalse($bag->has('number'));
-        $this->assertFalse($bag->has('fruit'));
+        $this->expectException(InvalidArgumentException::class);
+        $bag->getDateTime('number');
     }
 
-    public function testRemoveWhenKeyDoesNotExist(): void
+    public function testJsonGetterDecodesValuesAndReturnsDefaults(): void
     {
-        $bag = new Bag();
+        $bag = new Bag([
+            'array' => '{"name":"Ada"}',
+            'object' => '{"name":"Ada"}',
+        ]);
 
-        $this->expectException(ElementNotFoundException::class);
-
-        $bag->remove('number');
+        $this->assertSame(['name' => 'Ada'], $bag->getJson('array'));
+        $this->assertInstanceOf(stdClass::class, $bag->getJson('object', null, false));
+        $this->assertSame('Ada', $bag->getJson('object', null, false)->name);
+        $this->assertSame(['fallback' => true], $bag->getJson('missing', ['fallback' => true]));
     }
 
-    public function testGetAlphaAndAlphaNumAndDigits(): void
+    public function testJsonGetterRejectsInvalidAndNonStringValues(): void
     {
-        $bag = new Bag();
-        $bag->add('alpha', 'abcde');
-        $bag->add('alpha_num', 'abcde456789');
-        $bag->add('digits', '123456');
+        $bag = new Bag(['invalid' => '{', 'number' => 123]);
 
-        // alpha
-        $this->assertSame('abcde', $bag->getAlpha('alpha'));
-        $this->assertSame('abcde', $bag->getAlpha('alpha_num'));
-        $this->assertSame('', $bag->getAlpha('digits'));
+        try {
+            $bag->getJson('invalid');
+            $this->fail('Expected invalid JSON to throw an exception.');
+        } catch (JsonException) {
+        }
 
-        // alpha-num
-        $this->assertSame('abcde', $bag->getAlphaNum('alpha'));
-        $this->assertSame('abcde456789', $bag->getAlphaNum('alpha_num'));
-        $this->assertSame('123456', $bag->getAlphaNum('digits'));
-
-        // digits
-        $this->assertSame('', $bag->getDigits('alpha'));
-        $this->assertSame('456789', $bag->getDigits('alpha_num'));
-        $this->assertSame('123456', $bag->getDigits('digits'));
-
-        // alpha default values
-        $this->assertSame('', $bag->getAlpha('default'));
-        $this->assertSame('foo', $bag->getAlpha('default', 'foo'));
-        $this->assertNull($bag->getAlpha('default', null));
-
-        // alpha-num default values
-        $this->assertSame('', $bag->getAlphaNum('default'));
-        $this->assertSame('bar', $bag->getAlphaNum('default', 'bar'));
-        $this->assertNull($bag->getAlphaNum('default', null));
+        $this->expectException(InvalidArgumentException::class);
+        $bag->getJson('number');
     }
 
-    public function testGetArray(): void
+    public function testEnumGetterHandlesValuesDefaultsAndMissingEnumClasses(): void
     {
-        $bag = new Bag();
+        $bag = new Bag(['status' => TestEnum::Foo->value]);
 
-        // Array
-        $bag->add('array', ['q', 'w', 'e', 'r', 't', 'y']);
-        $this->assertSame(['q', 'w', 'e', 'r', 't', 'y'], $bag->getArray('array'));
-
-        // Default values
-        $this->assertSame([], $bag->getArray('default'));
-        $this->assertSame([3, 4, 5], $bag->getArray('default', [3, 4, 5]));
-        $this->assertNull($bag->getArray('default', null));
-    }
-
-    public function testGetBool(): void
-    {
-        $bag = new Bag();
-
-        // Booleans
-        $bag->add('true', true);
-        $this->assertTrue($bag->getBool('true'));
-
-        $bag->add('false', false);
-        $this->assertFalse($bag->getBool('false'));
-
-        // Default values
-        $this->assertFalse($bag->getBool('default'));
-        $this->assertTrue($bag->getBool('default', true));
-        $this->assertNull($bag->getBool('default', null));
-    }
-
-    public function testGetEnum(): void
-    {
-        $bag = new Bag();
-        $bag->add('foo', TestEnum::FOO->value);
-        $bag->add('bar', TestEnum::BAR->value);
-
-        // Enum
-        $this->assertSame(TestEnum::FOO, $bag->getEnum('foo', TestEnum::class));
-        $this->assertSame(TestEnum::BAR, $bag->getEnum('bar', TestEnum::class));
-
-        // Default values
-        $this->assertNull($bag->getEnum('zoo', TestEnum::class));
-        $this->assertSame(TestEnum::ZOO, $bag->getEnum('zoo', TestEnum::class, TestEnum::ZOO));
-    }
-
-    public function testGetEnumWhenEnumDoesNotExist(): void
-    {
-        $bag = new Bag();
+        $this->assertSame(TestEnum::Foo, $bag->getEnum('status', TestEnum::class));
+        $this->assertSame(TestEnum::Default, $bag->getEnum('missing', TestEnum::class, TestEnum::Default));
+        $this->assertNull($bag->getEnum('missing', TestEnum::class));
 
         $this->expectException(EnumNotFoundException::class);
-
-        $bag->getEnum('gas', 'MyDummyEnum');
+        $bag->getEnum('status', 'MissingEnum');
     }
 
-    public function testGetFloat(): void
+    public function testDotNotationResolvesNestedValuesAndPrefersExactKeys(): void
+    {
+        $bag = new Bag([
+            'user' => [
+                'profile' => [
+                    'name' => 'Ada',
+                    'active' => true,
+                    'nullable' => null,
+                ],
+            ],
+            'user.profile.name' => 'Exact key',
+            'scalar' => 'value',
+        ]);
+
+        $this->assertSame('Exact key', $bag->getString('user.profile.name'));
+        $this->assertTrue($bag->has('user.profile.active'));
+        $this->assertTrue($bag->isSet('user.profile.active'));
+        $this->assertTrue($bag->getBool('user.profile.active'));
+        $this->assertTrue($bag->has('user.profile.nullable'));
+        $this->assertFalse($bag->isSet('user.profile.nullable'));
+        $this->assertSame('fallback', $bag->get('user.profile.nullable', 'fallback'));
+        $this->assertSame('fallback', $bag->get('user.profile.missing', 'fallback'));
+        $this->assertSame('fallback', $bag->get('scalar.child', 'fallback'));
+        $this->assertFalse($bag->has('user.profile.missing'));
+    }
+
+    public function testRemovingExactAndNestedKeys(): void
+    {
+        $bag = new Bag([
+            'user.profile.name' => 'Exact key',
+            'user' => [
+                'profile' => [
+                    'name' => 'Nested value',
+                ],
+            ],
+        ]);
+
+        $this->assertSame($bag, $bag->remove('user.profile.name'));
+        $this->assertSame('Nested value', $bag->getString('user.profile.name'));
+        $bag->remove('user.profile.name');
+        $this->assertFalse($bag->has('user.profile.name'));
+    }
+
+    public function testRemovingMissingKeysThrowsAnException(): void
+    {
+        $bag = new Bag(['scalar' => 'value', 'array' => []]);
+
+        try {
+            $bag->remove('scalar.child');
+            $this->fail('Expected a missing intermediate path to throw an exception.');
+        } catch (ElementNotFoundException) {
+        }
+
+        $this->expectException(ElementNotFoundException::class);
+        $bag->remove('array.child');
+    }
+
+    public function testEmptyStateAndClear(): void
     {
         $bag = new Bag();
 
-        // Float
-        $bag->add('float', 123.4);
-        $this->assertSame(123.4, $bag->getFloat('float'));
-
-        // Int
-        $bag->add('int', 4);
-        $this->assertSame(4.0, $bag->getFloat('int'));
-
-        // Default values
-        $this->assertSame(0.0, $bag->getFloat('default'));
-        $this->assertSame(2.456, $bag->getFloat('default', 2.456));
-        $this->assertNull($bag->getFloat('default', null));
-    }
-
-    public function testGetInt(): void
-    {
-        $bag = new Bag();
-
-        // Integer
-        $bag->add('int', 2);
-        $this->assertSame(2, $bag->getInt('int'));
-
-        // Float
-        $bag->add('float', 123.4);
-        $this->assertSame(123, $bag->getInt('float'));
-
-        // Default values
-        $this->assertSame(0, $bag->getInt('default'));
-        $this->assertSame(3, $bag->getInt('default', 3));
-        $this->assertNull($bag->getInt('default', null));
-    }
-
-    public function testGetString(): void
-    {
-        $bag = new Bag();
-
-        // String
-        $bag->add('string', 'abc');
-        $this->assertSame('abc', $bag->getString('string'));
-
-        // Default values
-        $this->assertSame('', $bag->getString('default'));
-        $this->assertSame('foo', $bag->getString('default', 'foo'));
-        $this->assertNull($bag->getString('default', null));
-    }
-
-    public function testGet(): void
-    {
-        $bag = new Bag();
-
-        $bag->add('alpha', 'zoo');
-        $bag->add('alphanum', 'foo102030');
-        $bag->add('array', [1, 2, 3]);
-        $bag->add('true', true);
-        $bag->add('false', false);
-        //$bag->add('enums', '789.789');
-        $bag->add('digits', '789.789');
-        $bag->add('float', 456.789);
-        $bag->add('int', 123);
-        $bag->add('string', 'abc');
-
-        $this->assertSame('zoo', $bag->get('alpha'));
-        $this->assertSame('foo102030', $bag->get('alphanum'));
-        $this->assertSame([1, 2, 3], $bag->get('array'));
-        $this->assertSame(true, $bag->get('true'));
-        $this->assertSame(false, $bag->get('false'));
-        //$this->assertSame(false, $bag->get('enums'));
-        $this->assertSame('789.789', $bag->get('digits'));
-        $this->assertSame(456.789, $bag->get('float'));
-        $this->assertSame(123, $bag->get('int'));
-        $this->assertSame('abc', $bag->get('string'));
-    }
-
-    public function testIsEmpty(): void
-    {
-        $bag = new Bag();
-
-        // Initial state
         $this->assertTrue($bag->isEmpty());
-
-        // With one value
-        $bag->add('number', 1);
+        $this->assertFalse($bag->isNotEmpty());
+        $this->assertSame($bag, $bag->add('value', true));
         $this->assertFalse($bag->isEmpty());
-
-        // With two values
-        $bag->add('fruit', 'banana');
-        $this->assertFalse($bag->isEmpty());
-
-        // Remove one value
-        $bag->remove('number');
-        $this->assertFalse($bag->isEmpty());
-
-        // Remove two values
-        $bag->remove('fruit');
+        $this->assertTrue($bag->isNotEmpty());
+        $this->assertSame($bag, $bag->clear());
         $this->assertTrue($bag->isEmpty());
     }
 
-    public function testCount(): void
+    public function testCollectionOperationsReturnExpectedBagsAndBooleans(): void
     {
-        $bag = new Bag();
+        $bag = new Bag(['ada' => 100, 'grace' => 95, 'linus' => 80]);
 
-        // Initial state
-        $this->assertCount(0, $bag);
+        $filtered = $bag->filter(fn (string $name, int $score): bool => $score >= 95);
+        $mapped = $filtered->map(fn (string $name, int $score): string => "$name:$score");
 
-        // With one value
-        $bag->add('number', 1);
-        $this->assertCount(1, $bag);
-
-        // With two values
-        $bag->add('fruit', 'banana');
-        $this->assertCount(2, $bag);
-
-        // Remove one value
-        $bag->remove('number');
-        $this->assertCount(1, $bag);
-
-        // Remove two values
-        $bag->remove('fruit');
-        $this->assertCount(0, $bag);
+        $this->assertSame(['ada' => 100, 'grace' => 95], $filtered->toArray());
+        $this->assertSame(['ada' => 'ada:100', 'grace' => 'grace:95'], $mapped->toArray());
+        $this->assertTrue($bag->every(fn (string $name, int $score): bool => $score >= 80));
+        $this->assertFalse($bag->every(fn (string $name, int $score): bool => $score >= 95));
+        $this->assertTrue($bag->some(fn (string $name, int $score): bool => $score === 100));
+        $this->assertFalse($bag->some(fn (string $name, int $score): bool => $score === 70));
     }
 
-    public function testClear(): void
+    public function testDotNotationFlattensNestedArraysAndPreservesEmptyArrays(): void
     {
-        $bag = new Bag();
+        $bag = new Bag([
+            'user' => [
+                'name' => 'Ada',
+                'address' => ['city' => 'London'],
+            ],
+            'tags' => [],
+        ]);
 
-        $bag->set(['number' => 1, 'fruit' => 'banana']);
-        $bag->clear();
-        $this->assertSame([], $bag->getAll());
-
-        $bag->set(['text' => 'Lorem ipsum...', 'is_created_by_human' => false]);
-        $bag->clear();
-        $this->assertSame([], $bag->getAll());
-    }
-
-    public function testGetIterator(): void
-    {
-        $bag = new Bag();
-
-        $bag->add('number', 1);
-        $bag->add('fruit', 'banana');
-
-        $it = $bag->getIterator();
-
-        $this->assertInstanceOf(ArrayIterator::class, $it);
-    }
-
-    public function testToArray(): void
-    {
-        $bag = new Bag();
-
-        $this->assertSame([], $bag->toArray());
-
-        $bag->add('string', 'abc');
-        $bag->add('int', 7);
-        $bag->add('float', 7.22);
-
+        $this->assertSame($bag, $bag->toDotNotation());
         $this->assertSame([
-            'string' => 'abc',
-            'int' => 7,
-            'float' => 7.22,
+            'user.name' => 'Ada',
+            'user.address.city' => 'London',
+            'tags' => [],
         ], $bag->toArray());
-
-        $bag->clear();
-
-        $this->assertSame([], $bag->toArray());
     }
 
+    public function testToJsonEncodesBagContents(): void
+    {
+        $bag = new Bag(['name' => 'Ada', 'active' => true]);
+
+        $this->assertSame('{"name":"Ada","active":true}', $bag->toJson());
+    }
 }
