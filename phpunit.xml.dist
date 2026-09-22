@@ -3,7 +3,7 @@
 <phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
          colors="true"
-         cacheResult="false">
+         recordTestRunHistory="false">
 
     <php>
         <ini name="display_errors" value="1" />
