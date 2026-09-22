@@ -36,7 +36,7 @@ class Bag implements BagInterface
         return array_values($this->bag);
     }
 
-    public function merge(array|BagInterface ...$bags): BagInterface
+    public function merge(array|BagInterface ...$bags): self
     {
         foreach ($bags as $bag) {
             if ($bag instanceof BagInterface) {
