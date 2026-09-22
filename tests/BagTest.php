@@ -94,10 +94,12 @@ class BagTest extends TestCase
 
     public function testArrayAndBagGetters(): void
     {
+        $nestedBag = new Bag(['name' => 'Ada']);
         $bag = new Bag([
             'list' => ['one', 'two'],
             'scalar' => 'value',
             'nested' => ['name' => 'Ada'],
+            'nested_bag' => $nestedBag,
         ]);
         $defaultBag = new Bag(['default' => true]);
         $defaultBagInterface = $this->createMock(BagInterface::class);
@@ -108,6 +110,8 @@ class BagTest extends TestCase
         $this->assertNull($bag->getArray('missing', null));
 
         $this->assertSame(['name' => 'Ada'], $bag->getBag('nested')->toArray());
+        $this->assertSame(['name' => 'Ada'], $bag->getBag('nested_bag')->toArray());
+        $this->assertNotSame($nestedBag, $bag->getBag('nested_bag'));
         $this->assertSame(['fallback' => true], $bag->getBag('missing', ['fallback' => true])->toArray());
         $this->assertSame($defaultBag, $bag->getBag('missing', $defaultBag));
         $this->assertSame($defaultBagInterface, $bag->getBag('missing', $defaultBagInterface));

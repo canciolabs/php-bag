@@ -92,7 +92,9 @@ class Bag implements BagInterface
             return $default instanceof BagInterface ? $default : new self((array) $default);
         }
 
-        return new self((array) $this->get($key));
+        $value = $this->get($key);
+
+        return new self($value instanceof BagInterface ? $value->toArray() : (array) $value);
     }
 
     public function getBool(string $key, ?bool $default = false): ?bool
