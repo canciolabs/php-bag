@@ -20,6 +20,11 @@ enum TestEnum: string
     case Default = 'default';
 }
 
+enum UnbackedTestEnum
+{
+    case Value;
+}
+
 class BagTest extends TestCase
 {
     public function testConstructingAndInspectingABag(): void
@@ -111,6 +116,7 @@ class BagTest extends TestCase
         $bag = new Bag([
             'instance' => $immutable,
             'formatted' => '21/09/2026',
+            'default_format' => '2026-09-21 10:30:00',
             'invalid' => 'not a date',
             'number' => 123,
         ]);
@@ -118,6 +124,7 @@ class BagTest extends TestCase
         $this->assertSame($immutable, $bag->getDateTime('instance'));
         $this->assertInstanceOf(DateTime::class, $bag->getDateTime('formatted', 'd/m/Y'));
         $this->assertSame('2026-09-21', $bag->getDateTime('formatted', 'd/m/Y')->format('Y-m-d'));
+        $this->assertSame('2026-09-21 10:30:00', $bag->getDateTime('default_format', null)->format('Y-m-d H:i:s'));
         $this->assertSame($default, $bag->getDateTime('missing', 'Y-m-d', $default));
 
         $this->expectException(InvalidArgumentException::class);
@@ -130,6 +137,14 @@ class BagTest extends TestCase
 
         $this->expectException(InvalidArgumentException::class);
         $bag->getDateTime('number');
+    }
+
+    public function testDateTimeGetterRejectsDatesWithParsingWarnings(): void
+    {
+        $bag = new Bag(['invalid_date' => '2026-02-30 10:30:00']);
+
+        $this->expectException(InvalidArgumentException::class);
+        $bag->getDateTime('invalid_date');
     }
 
     public function testJsonGetterDecodesValuesAndReturnsDefaults(): void
@@ -161,14 +176,23 @@ class BagTest extends TestCase
 
     public function testEnumGetterHandlesValuesDefaultsAndMissingEnumClasses(): void
     {
-        $bag = new Bag(['status' => TestEnum::Foo->value]);
+        $bag = new Bag(['status' => TestEnum::Foo->value, 'nullable' => null]);
 
         $this->assertSame(TestEnum::Foo, $bag->getEnum('status', TestEnum::class));
         $this->assertSame(TestEnum::Default, $bag->getEnum('missing', TestEnum::class, TestEnum::Default));
         $this->assertNull($bag->getEnum('missing', TestEnum::class));
+        $this->assertSame(TestEnum::Default, $bag->getEnum('nullable', TestEnum::class, TestEnum::Default));
 
         $this->expectException(EnumNotFoundException::class);
         $bag->getEnum('status', 'MissingEnum');
+    }
+
+    public function testEnumGetterRejectsUnbackedEnums(): void
+    {
+        $bag = new Bag(['status' => 'value']);
+
+        $this->expectException(EnumNotFoundException::class);
+        $bag->getEnum('status', UnbackedTestEnum::class);
     }
 
     public function testDotNotationResolvesNestedValuesAndPrefersExactKeys(): void
