@@ -113,8 +113,10 @@ class Bag implements BagInterface
         }
 
         if (is_string($value)) {
-            $dateTime = DateTime::createFromFormat($format, $value);
-            if ($dateTime !== false) {
+            $dateTime = DateTime::createFromFormat($format ?? 'Y-m-d H:i:s', $value);
+            $errors = DateTime::getLastErrors();
+
+            if ($dateTime !== false && ($errors === false || ($errors['warning_count'] === 0 && $errors['error_count'] === 0))) {
                 return $dateTime;
             }
         }
@@ -124,11 +126,11 @@ class Bag implements BagInterface
 
     public function getEnum(string $key, string $enumFQN, ?BackedEnum $default = null): ?BackedEnum
     {
-        if (!enum_exists($enumFQN)) {
+        if (!enum_exists($enumFQN) || !is_subclass_of($enumFQN, BackedEnum::class)) {
             throw new EnumNotFoundException($enumFQN);
         }
 
-        if (!$this->has($key)) {
+        if (!$this->isSet($key)) {
             return $default;
         }
 
