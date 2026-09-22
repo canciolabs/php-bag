@@ -70,6 +70,12 @@ class BagTest extends TestCase
             'falsy' => false,
             'value' => 42,
             'array' => ['value'],
+            'stringable' => new class implements \Stringable {
+                public function __toString(): string
+                {
+                    return 'Stringable value';
+                }
+            },
         ]);
 
         $this->assertSame('Ab', $bag->getAlpha('alpha'));
@@ -82,6 +88,7 @@ class BagTest extends TestCase
         $this->assertTrue($bag->getBool('truthy'));
         $this->assertFalse($bag->getBool('falsy'));
         $this->assertSame('42', $bag->getString('value'));
+        $this->assertSame('Stringable value', $bag->getString('stringable'));
 
         $this->assertSame('fallback', $bag->get('missing', 'fallback'));
         $this->assertSame('', $bag->getAlpha('missing'));

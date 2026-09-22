@@ -174,6 +174,10 @@ class Bag implements BagInterface
 
     public function getString(string $key, ?string $default = ''): ?string
     {
+        if ($this->isSet($key) && is_array($this->get($key))) {
+            throw new InvalidArgumentException("The value for key '$key' is an array, not a string.");
+        }
+
         return $this->isSet($key) ? (string) $this->get($key) : $default;
     }
 
