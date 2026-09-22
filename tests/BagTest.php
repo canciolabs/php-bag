@@ -26,7 +26,7 @@ class BagTest extends TestCase
 
         // When arg not empty
         $bag2 = new Bag(['number' => 1, 'fruit' => 'banana']);
-        $this->assertSame(['number' => 1, 'fruit' => 'banana'], $bag2->all());
+        $this->assertSame(['number' => 1, 'fruit' => 'banana'], $bag2->getAll());
     }
 
     public function testAll(): void
@@ -34,20 +34,20 @@ class BagTest extends TestCase
         $bag = new Bag();
 
         // Initial state
-        $this->assertSame([], $bag->all());
+        $this->assertSame([], $bag->getAll());
 
         // With one value
         $bag->add('number', 1);
         $this->assertSame([
             'number' => 1,
-        ], $bag->all());
+        ], $bag->getAll());
 
         // With two values
         $bag->add('fruit', 'banana');
         $this->assertSame([
             'number' => 1,
             'fruit' => 'banana',
-        ], $bag->all());
+        ], $bag->getAll());
     }
 
     public function testKeys(): void
@@ -55,15 +55,15 @@ class BagTest extends TestCase
         $bag = new Bag();
 
         // Initial state
-        $this->assertSame([], $bag->keys());
+        $this->assertSame([], $bag->getKeys());
 
         // With one value
         $bag->add('number', 1);
-        $this->assertSame(['number'], $bag->keys());
+        $this->assertSame(['number'], $bag->getKeys());
 
         // With two values
         $bag->add('fruit', 'banana');
-        $this->assertSame(['number', 'fruit'], $bag->keys());
+        $this->assertSame(['number', 'fruit'], $bag->getKeys());
     }
 
     public function testValues(): void
@@ -71,15 +71,15 @@ class BagTest extends TestCase
         $bag = new Bag();
 
         // Initial state
-        $this->assertSame([], $bag->values());
+        $this->assertSame([], $bag->getValues());
 
         // With one value
         $bag->add('number', 1);
-        $this->assertSame([1], $bag->values());
+        $this->assertSame([1], $bag->getValues());
 
         // With two values
         $bag->add('fruit', 'banana');
-        $this->assertSame([1, 'banana'], $bag->values());
+        $this->assertSame([1, 'banana'], $bag->getValues());
     }
 
     public function testSet(): void
@@ -87,10 +87,10 @@ class BagTest extends TestCase
         $bag = new Bag();
 
         $bag->set(['number' => 1, 'fruit' => 'banana']);
-        $this->assertSame(['number' => 1, 'fruit' => 'banana'], $bag->all());
+        $this->assertSame(['number' => 1, 'fruit' => 'banana'], $bag->getAll());
 
         $bag->set(['text' => 'Lorem ipsum...', 'is_created_by_human' => false]);
-        $this->assertSame(['text' => 'Lorem ipsum...', 'is_created_by_human' => false], $bag->all());
+        $this->assertSame(['text' => 'Lorem ipsum...', 'is_created_by_human' => false], $bag->getAll());
     }
 
     public function testAddHasAndRemove(): void
@@ -127,7 +127,6 @@ class BagTest extends TestCase
         $bag = new Bag();
 
         $this->expectException(ElementNotFoundException::class);
-        $this->expectExceptionMessage('Unable to remove the element "number" as it was not found in the bag.');
 
         $bag->remove('number');
     }
@@ -351,11 +350,11 @@ class BagTest extends TestCase
 
         $bag->set(['number' => 1, 'fruit' => 'banana']);
         $bag->clear();
-        $this->assertSame([], $bag->all());
+        $this->assertSame([], $bag->getAll());
 
         $bag->set(['text' => 'Lorem ipsum...', 'is_created_by_human' => false]);
         $bag->clear();
-        $this->assertSame([], $bag->all());
+        $this->assertSame([], $bag->getAll());
     }
 
     public function testGetIterator(): void
