@@ -10,7 +10,7 @@ class EnumNotFoundException extends Exception
 
     public function __construct(string $enumFQN = "", int $code = 0, ?Throwable $previous = null)
     {
-        $message = sprintf('Unable to find the Enum from the given fully qualified name ("%s").', $enumFQN);
+        $message = sprintf('The name "%s" does not identify a backed enum.', $enumFQN);
 
         parent::__construct($message, $code, $previous);
     }

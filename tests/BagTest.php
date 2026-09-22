@@ -184,6 +184,7 @@ class BagTest extends TestCase
         $this->assertSame(TestEnum::Default, $bag->getEnum('nullable', TestEnum::class, TestEnum::Default));
 
         $this->expectException(EnumNotFoundException::class);
+        $this->expectExceptionMessage('The name "MissingEnum" does not identify a backed enum.');
         $bag->getEnum('status', 'MissingEnum');
     }
 
@@ -192,6 +193,9 @@ class BagTest extends TestCase
         $bag = new Bag(['status' => 'value']);
 
         $this->expectException(EnumNotFoundException::class);
+        $this->expectExceptionMessage(
+            sprintf('The name "%s" does not identify a backed enum.', UnbackedTestEnum::class)
+        );
         $bag->getEnum('status', UnbackedTestEnum::class);
     }
 
