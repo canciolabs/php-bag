@@ -211,11 +211,29 @@ class Bag implements BagInterface
 
     public function remove(string $key): BagInterface
     {
-        if (!$this->has($key)) {
+        if (array_key_exists($key, $this->bag)) {
+            unset($this->bag[$key]);
+
+            return $this;
+        }
+
+        $bag = &$this->bag;
+        $segments = explode('.', $key);
+        $lastSegment = array_pop($segments);
+
+        foreach ($segments as $segment) {
+            if (!is_array($bag) || !array_key_exists($segment, $bag)) {
+                throw new ElementNotFoundException($key);
+            }
+
+            $bag = &$bag[$segment];
+        }
+
+        if (!is_array($bag) || !array_key_exists($lastSegment, $bag)) {
             throw new ElementNotFoundException($key);
         }
 
-        unset($this->bag[$key]);
+        unset($bag[$lastSegment]);
 
         return $this;
     }
