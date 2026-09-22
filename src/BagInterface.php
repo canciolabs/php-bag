@@ -71,8 +71,8 @@ interface BagInterface extends Countable, IteratorAggregate
     public function getDateTime(string $key, ?string $format = 'Y-m-d H:i:s', ?DateTimeInterface $default = null): ?DateTimeInterface;
 
     /**
-     * Returns an enum case of a given key and a backed enum full qualified name,
-     * and the default value if the key doesn't exist.
+     * Returns an enum case of a given key and the default value if the key doesn't exist.
+     * The supplied fully qualified class name must identify a backed enum.
      */
     public function getEnum(string $key, string $enumFQN, ?BackedEnum $default = null): ?BackedEnum;
 

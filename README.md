@@ -117,8 +117,8 @@ $bag->getEnum('status', Status::class);                // Status::Published
 
 `getDateTime()` uses `Y-m-d H:i:s` by default; supply a format as its second
 argument when needed. `getJson()` throws `JsonException` for invalid JSON,
-and `getEnum()` throws `EnumNotFoundException` when the supplied class is not
-an enum.
+and `getEnum()` throws `EnumNotFoundException` unless the supplied class
+identifies a backed enum.
 
 ## Dot notation
 
