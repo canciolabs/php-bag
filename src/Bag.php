@@ -69,12 +69,12 @@ class Bag implements BagInterface
 
     public function getAlpha(string $key, ?string $default = ''): ?string
     {
-        return $this->isSet($key) ? preg_replace('/[^[:alpha:]]/', '', $this->get($key)) : $default;
+        return $this->isSet($key) ? preg_replace('/[^[:alpha:]]/', '', $this->getString($key)) : $default;
     }
 
     public function getAlphaNum(string $key, ?string $default = ''): ?string
     {
-        return $this->isSet($key) ? preg_replace('/[^[:alnum:]]/', '', $this->get($key)) : $default;
+        return $this->isSet($key) ? preg_replace('/[^[:alnum:]]/', '', $this->getString($key)) : $default;
     }
 
     public function getArray(string $key, ?array $default = []): ?array

@@ -69,10 +69,13 @@ class BagTest extends TestCase
             'truthy' => '1',
             'falsy' => false,
             'value' => 42,
+            'array' => ['value'],
         ]);
 
         $this->assertSame('Ab', $bag->getAlpha('alpha'));
         $this->assertSame('A1b', $bag->getAlphaNum('alpha'));
+        $this->assertSame('Array', @$bag->getAlpha('array'));
+        $this->assertSame('Array', @$bag->getAlphaNum('array'));
         $this->assertSame('1', $bag->getDigits('alpha'));
         $this->assertSame(12, $bag->getInt('number'));
         $this->assertSame(12.7, $bag->getFloat('number'));
