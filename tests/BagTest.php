@@ -81,7 +81,9 @@ class BagTest extends TestCase
         $this->assertSame('42', $bag->getString('value'));
 
         $this->assertSame('fallback', $bag->get('missing', 'fallback'));
+        $this->assertSame('', $bag->getAlpha('missing'));
         $this->assertSame('fallback', $bag->getAlpha('missing', 'fallback'));
+        $this->assertSame('', $bag->getAlphaNum('missing'));
         $this->assertSame('fallback', $bag->getAlphaNum('missing', 'fallback'));
         $this->assertSame('fallback', $bag->getDigits('missing', 'fallback'));
         $this->assertSame(99, $bag->getInt('missing', 99));

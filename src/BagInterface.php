@@ -45,12 +45,12 @@ interface BagInterface extends Countable, IteratorAggregate
     /**
      * Returns the alpha value of a given key and the default value if the key doesn't exist.
      */
-    public function getAlpha(string $key, ?string $default = null): ?string;
+    public function getAlpha(string $key, ?string $default = ''): ?string;
 
     /**
      * Returns the alphanumeric value of a given key and the default value if the key doesn't exist.
      */
-    public function getAlphaNum(string $key, ?string $default = null): ?string;
+    public function getAlphaNum(string $key, ?string $default = ''): ?string;
 
     /**
      * Returns the array value of a given key and the default value if the key doesn't exist.
